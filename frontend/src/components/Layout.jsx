@@ -5,19 +5,20 @@ import 'react-resizable/css/styles.css';
 const ComponentResizable = ({ name, initialSize, updateComponentSize, addOrUpdateData, existingComponent }) => {
     const [size, setSize] = useState(initialSize);
     const [data, setData] = useState('');
+    const [operation, setOperation] = useState('add'); // Default operation is 'add'
 
-    // Function to handle resizing of the component
+    // Handler for resizing the component
     const handleResize = (e, { size }) => {
         setSize(size);
         updateComponentSize(name, size);
     };
 
-    // Function to handle input change
+    // Handler for input change
     const handleInputChange = (e) => {
         setData(e.target.value);
     };
 
-    // Function to handle adding or updating data
+    // Handler for adding or updating data
     const handleAddOrUpdateData = async () => {
         if (!data) {
             alert('Please enter data.');
@@ -25,16 +26,12 @@ const ComponentResizable = ({ name, initialSize, updateComponentSize, addOrUpdat
         }
 
         try {
-            if (existingComponent) {
-                await addOrUpdateData(name, data, 'update'); // Pass 'update' as operation
-            } else {
-                await addOrUpdateData(name, data, 'add'); // Pass 'add' as operation
-            }
-            alert(`Data ${existingComponent ? 'updated' : 'added'} successfully.`);
+            await addOrUpdateData(name, data, operation); // Pass the operation
+            alert(`Data ${operation === 'update' ? 'updated' : 'added'} successfully.`);
             setData(''); // Clear input field after adding/updating data
         } catch (error) {
             console.error('Error:', error);
-            alert(`Failed to ${existingComponent ? 'update' : 'add'} data: ${error.message}`);
+            alert(`Failed to ${operation === 'update' ? 'update' : 'add'} data: ${error.message}`);
         }
     };
 
@@ -56,7 +53,12 @@ const ComponentResizable = ({ name, initialSize, updateComponentSize, addOrUpdat
                     placeholder="Enter data..."
                     style={{ marginBottom: '10px' }}
                 />
-                <button onClick={handleAddOrUpdateData}>Add/Update Data</button>
+                {/* Button to set the operation to 'add' */}
+                <button onClick={() => setOperation('add')}>Add</button>
+                {/* Button to set the operation to 'update' */}
+                <button onClick={() => setOperation('update')}>Update</button>
+                {/* Button to add or update data */}
+                <button onClick={handleAddOrUpdateData}>{operation === 'update' ? 'Update' : 'Add'} Data</button>
             </div>
         </ResizableBox>
     );
@@ -67,7 +69,6 @@ const Layout = () => {
     const [loading, setLoading] = useState(true);
     const [apiCount, setApiCount] = useState(0);
 
-    // Fetch component sizes and API count on component mount
     useEffect(() => {
         fetchComponentSizes();
     }, []);
@@ -94,7 +95,7 @@ const Layout = () => {
         }
     };
 
-    // Function to update component size (not implemented in this example)
+    // Function to update the size of a component
     const updateComponentSize = async (name, size) => {
         try {
             console.log(`Updating size of ${name} to`, size);
